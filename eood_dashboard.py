@@ -69,7 +69,8 @@ st.plotly_chart(fig_revenue, use_container_width=True)
 
 # Biểu đồ Pie Chart tổng quan tỷ lệ OOD
 ood_pie_data = data["Prediction"].value_counts().reset_index()
-fig_pie = px.pie(ood_pie_data, names="index", values="Prediction", title="🎯 Tỷ lệ OOD vs ID trên toàn bộ dữ liệu")
+ood_pie_data.columns = ["Prediction", "Count"]
+fig_pie = px.pie(ood_pie_data, names="Prediction", values="Count", title="🎯 Tỷ lệ OOD vs ID trên toàn bộ dữ liệu")
 st.plotly_chart(fig_pie, use_container_width=True)
 
 # Xu hướng phát hiện OOD theo thời gian
