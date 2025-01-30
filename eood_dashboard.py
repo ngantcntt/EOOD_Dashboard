@@ -4,13 +4,34 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
+# Danh sách sản phẩm mẫu
+product_list = [
+    "Khăn mặt bông Deary 28*46 (10 cái/Túi)",
+    "Dao cạo râu lưỡi kép có đệm bôi trơn LUS-3P; 3 Cái/Gói; 10 Gói/Hộp",
+    "Dung dịch sát khuẩn On1 hương Bamboo Charcoal 500ml/CH20",
+    "Nước rửa tay Aroma 500 g (12 chai/thùng)",
+    "Sữa tắm không chất phụ gia Pharmaact 600ml (16 Chai/ Thùng)",
+    "Dầu gội FARA cho tóc nhuộm 250ml (12 chai/thùng)",
+    "Bột giặt Polar Bear đỏ 2,25kg ( 8 túi/Bao )",
+    "Nước giặt cao cấp Caremore hương nước hoa 3,8 kg",
+    "Nước xả vải đậm đặc FUWA 500ml (20 Túi/ Thùng)",
+    "Nước lau sàn Izana hương quế 2.1 kg (6 chai/ thùng)",
+    "Nước tẩy toilet Kliin 500g",
+    "Nước uống tăng lực Rồng Đỏ hương dâu 330ml (6 chai*4 lốc/thùng)",
+    "Rượu Vodka Cọ chai thủy tinh 600ml - 6 chai/thùng",
+    "Cà phê VCF 3in1 Gold 18 gói*17g",
+    "Bột ngũ cốc 5 thứ đậu 400g (28 Gói/ Thùng)",
+    "Trà Akbar mixed fruit 24x20x2g"
+]
+
 # Giả lập dữ liệu dự đoán OOD
 data = pd.DataFrame({
-    "Product ID": [f"SP{i}" for i in range(20)],
-    "Province": np.random.choice(["Hà Nội", "Hồ Chí Minh", "Đà Nẵng", "Cần Thơ"], 20),
-    "Prediction": np.random.choice(["OOD", "ID"], 20, p=[0.4, 0.6]),
-    "Confidence Score": np.round(np.random.uniform(0.7, 1.0, 20), 2),
-    "Revenue": np.round(np.random.uniform(500000, 5000000, 20), -3)
+    "Product ID": [f"SP{i}" for i in range(len(product_list))],
+    "Product Name": product_list,
+    "Province": np.random.choice(["Hà Nội", "Hồ Chí Minh", "Đà Nẵng", "Cần Thơ"], len(product_list)),
+    "Prediction": np.random.choice(["OOD", "ID"], len(product_list), p=[0.4, 0.6]),
+    "Confidence Score": np.round(np.random.uniform(0.7, 1.0, len(product_list)), 2),
+    "Revenue": np.round(np.random.uniform(500000, 5000000, len(product_list)), -3)
 })
 
 # Tạo giao diện Streamlit
