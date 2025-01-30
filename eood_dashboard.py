@@ -29,9 +29,12 @@ if province_filter != "Tất cả":
     filtered_data = filtered_data[filtered_data["Province"] == province_filter]
 filtered_data = filtered_data[filtered_data["Confidence Score"] >= confidence_threshold]
 
-# Hiển thị bảng dữ liệu
+# Hiển thị bảng dữ liệu có màu sắc OOD
+def highlight_ood(s):
+    return ['background-color: #FFDDC1' if v == "OOD" else '' for v in s]
+
 st.markdown("### 📋 Danh sách sản phẩm được phát hiện OOD")
-st.dataframe(filtered_data, height=300)
+st.dataframe(filtered_data.style.apply(highlight_ood, subset=["Prediction"]))
 
 # Biểu đồ tỷ lệ OOD theo tỉnh
 ood_counts = data[data["Prediction"] == "OOD"].groupby("Province").size().reset_index(name="Count")
@@ -43,9 +46,22 @@ time_series_data = data.groupby("Province")["Revenue"].sum().reset_index()
 fig_revenue = px.line(time_series_data, x="Province", y="Revenue", markers=True, title="📈 Xu hướng doanh thu theo tỉnh")
 st.plotly_chart(fig_revenue, use_container_width=True)
 
-# Hiển thị thông báo cảnh báo nếu tỷ lệ OOD quá cao
+# Biểu đồ Pie Chart tổng quan tỷ lệ OOD
+ood_pie_data = data["Prediction"].value_counts().reset_index()
+fig_pie = px.pie(ood_pie_data, names="index", values="Prediction", title="🎯 Tỷ lệ OOD vs ID trên toàn bộ dữ liệu")
+st.plotly_chart(fig_pie, use_container_width=True)
+
+# Xu hướng phát hiện OOD theo thời gian
+data["Date"] = np.random.choice(pd.date_range(start="2024-01-01", periods=30, freq="D"), len(data))
+ood_trend = data[data["Prediction"] == "OOD"].groupby("Date").size().reset_index(name="Count")
+fig_trend = px.line(ood_trend, x="Date", y="Count", markers=True, title="📉 Xu hướng phát hiện OOD theo thời gian")
+st.plotly_chart(fig_trend, use_container_width=True)
+
+# Hiển thị cảnh báo nếu số lượng OOD tăng mạnh
 total_ood = len(data[data["Prediction"] == "OOD"])
 if total_ood > 10:
     st.warning(f"🚨 Cảnh báo: Có {total_ood} sản phẩm được xác định là OOD! Kiểm tra ngay.")
+if ood_trend["Count"].tail(3).mean() > 8:
+    st.error("🚨 Cảnh báo: Số lượng OOD đang tăng nhanh trong 3 ngày qua! Kiểm tra hệ thống ngay.")
 
 st.success("🎉 Dashboard hoạt động tốt! Hãy sử dụng bộ lọc để xem thông tin chi tiết.")
