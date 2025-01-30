@@ -87,7 +87,7 @@ st.plotly_chart(fig_trend, use_container_width=True)
 
 # Hiển thị cảnh báo nếu số lượng OOD tăng mạnh
 total_ood = len(data[data["Prediction"] == "OOD"])
-if total_ood > 10:
+if total_ood > 3:
     st.warning(f"🚨 Cảnh báo: Có {total_ood} sản phẩm được xác định là OOD! Kiểm tra ngay.")
 if ood_trend["Count"].tail(3).mean() > 8:
     st.error("🚨 Cảnh báo: Số lượng OOD đang tăng nhanh trong 3 ngày qua! Kiểm tra hệ thống ngay.")
