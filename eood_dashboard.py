@@ -73,9 +73,15 @@ ood_pie_data.columns = ["Prediction", "Count"]
 fig_pie = px.pie(ood_pie_data, names="Prediction", values="Count", title="🎯 Tỷ lệ OOD vs ID trên toàn bộ dữ liệu")
 st.plotly_chart(fig_pie, use_container_width=True)
 
-# Xu hướng phát hiện OOD theo thời gian
+# Giả lập dữ liệu xu hướng phát hiện OOD theo thời gian
 data["Date"] = np.random.choice(pd.date_range(start="2024-01-01", periods=30, freq="D"), len(data))
 ood_trend = data[data["Prediction"] == "OOD"].groupby("Date").size().reset_index(name="Count")
+
+# Đảm bảo có dữ liệu trên toàn bộ 30 ngày
+date_range = pd.DataFrame({"Date": pd.date_range(start="2024-01-01", periods=30, freq="D")})
+ood_trend = date_range.merge(ood_trend, on="Date", how="left").fillna(0)
+
+# Vẽ biểu đồ xu hướng OOD
 fig_trend = px.line(ood_trend, x="Date", y="Count", markers=True, title="📉 Xu hướng phát hiện OOD theo thời gian")
 st.plotly_chart(fig_trend, use_container_width=True)
 
