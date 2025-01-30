@@ -1,39 +1,51 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
 
 # Giả lập dữ liệu dự đoán OOD
 data = pd.DataFrame({
-    "Product ID": [f"SP{i}" for i in range(10)],
-    "Province": np.random.choice(["Hà Nội", "Hồ Chí Minh", "Đà Nẵng", "Cần Thơ"], 10),
-    "Prediction": np.random.choice(["OOD", "ID"], 10, p=[0.4, 0.6]),
-    "Confidence Score": np.round(np.random.uniform(0.7, 1.0, 10), 2)
+    "Product ID": [f"SP{i}" for i in range(20)],
+    "Province": np.random.choice(["Hà Nội", "Hồ Chí Minh", "Đà Nẵng", "Cần Thơ"], 20),
+    "Prediction": np.random.choice(["OOD", "ID"], 20, p=[0.4, 0.6]),
+    "Confidence Score": np.round(np.random.uniform(0.7, 1.0, 20), 2),
+    "Revenue": np.round(np.random.uniform(500000, 5000000, 20), -3)
 })
 
-# Giao diện Streamlit
-st.title("EOOD Detection Dashboard")
-st.subheader("📊 Phát hiện dữ liệu ngoài phân phối (OOD) trong hệ thống LIBERICO")
+# Tạo giao diện Streamlit
+st.set_page_config(page_title="EOOD Detection Dashboard", layout="wide")
+st.title("📊 EOOD Detection Dashboard - LIBERICO")
+st.markdown("### Hệ thống phát hiện dữ liệu ngoài phân phối (OOD)")
 
-# Bộ lọc tỉnh thành
-province_filter = st.selectbox("Chọn tỉnh thành:", ["Tất cả"] + list(data["Province"].unique()))
+# Bộ lọc dữ liệu
+col1, col2 = st.columns(2)
+province_filter = col1.selectbox("🔍 Chọn tỉnh thành:", ["Tất cả"] + list(data["Province"].unique()))
+confidence_threshold = col2.slider("🎯 Ngưỡng độ tin cậy (Confidence Score)", 0.7, 1.0, 0.8)
 
-# Lọc dữ liệu theo tỉnh
+# Lọc dữ liệu
+filtered_data = data.copy()
 if province_filter != "Tất cả":
-    filtered_data = data[data["Province"] == province_filter]
-else:
-    filtered_data = data
+    filtered_data = filtered_data[filtered_data["Province"] == province_filter]
+filtered_data = filtered_data[filtered_data["Confidence Score"] >= confidence_threshold]
 
 # Hiển thị bảng dữ liệu
-st.dataframe(filtered_data)
+st.markdown("### 📋 Danh sách sản phẩm được phát hiện OOD")
+st.dataframe(filtered_data, height=300)
 
 # Biểu đồ tỷ lệ OOD theo tỉnh
-ood_counts = data[data["Prediction"] == "OOD"].groupby("Province").size()
-plt.figure(figsize=(6,4))
-plt.bar(ood_counts.index, ood_counts.values, color='red')
-plt.xlabel("Tỉnh thành")
-plt.ylabel("Số lượng OOD")
-plt.title("Tỷ lệ phát hiện OOD theo tỉnh")
-st.pyplot(plt)
+ood_counts = data[data["Prediction"] == "OOD"].groupby("Province").size().reset_index(name="Count")
+fig_ood = px.bar(ood_counts, x="Province", y="Count", title="📌 Tỷ lệ OOD theo tỉnh", color="Province")
+st.plotly_chart(fig_ood, use_container_width=True)
 
-st.success("Dashboard hoạt động! Bạn có thể lọc dữ liệu và kiểm tra kết quả.")
+# Biểu đồ xu hướng doanh thu
+time_series_data = data.groupby("Province")["Revenue"].sum().reset_index()
+fig_revenue = px.line(time_series_data, x="Province", y="Revenue", markers=True, title="📈 Xu hướng doanh thu theo tỉnh")
+st.plotly_chart(fig_revenue, use_container_width=True)
+
+# Hiển thị thông báo cảnh báo nếu tỷ lệ OOD quá cao
+total_ood = len(data[data["Prediction"] == "OOD"])
+if total_ood > 10:
+    st.warning(f"🚨 Cảnh báo: Có {total_ood} sản phẩm được xác định là OOD! Kiểm tra ngay.")
+
+st.success("🎉 Dashboard hoạt động tốt! Hãy sử dụng bộ lọc để xem thông tin chi tiết.")
